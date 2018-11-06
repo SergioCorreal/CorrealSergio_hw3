@@ -19,31 +19,6 @@ medidas= ['radius1','texture1','perimeter1','area1','smoothness1','compactness1'
 m = df.loc[:,medidas].values # Tomo solo los datos de mediciones
 mT = df.loc[:,todas_medidas].values
 
-malignosDF = df[df['diagnosis']=='M'] 
-malignos = malignosDF.loc[:,medidas].values # Datos para celulas malignas
-meanM= np.mean(malignos)
-stdM = np.std(malignos)
-norm_malignos = (malignos - meanM) / stdM
-
-benignosDF = df[df['diagnosis']=='B'] 
-benignos = benignosDF.loc[:,medidas].values # Datos para celulas benignas
-meanB= np.mean(benignos)
-stdB = np.std(benignos)
-norm_benignos = (benignos - meanB) / stdB
-
-malignosDFT = df[df['diagnosis']=='M']
-malignosT = malignosDFT.loc[:,todas_medidas].values
-meanMT= np.mean(malignosT)
-stdMT = np.std(malignosT)
-norm_malignosT = (malignosT - meanMT) / stdMT
-
-benignosDFT = df[df['diagnosis']=='B']
-benignosT = benignosDFT.loc[:,todas_medidas].values
-meanBT= np.mean(benignosT)
-stdBT = np.std(benignosT)
-norm_benignosT = (benignosT - meanBT) / stdBT
-
-
 def tratar(data): # Hago funcion que trate los datos para PCA de forma automatica
 	f = data.shape[0]
 	c = data.shape[1]
@@ -67,6 +42,22 @@ def cov(data): # Calculo matriz de covarianza. Las columnas corresponden a disti
 	return covr
 
 # Tratamos primero los datos
+
+malignosDF = df[df['diagnosis']=='M']
+malignos = malignosDF.loc[:,medidas].values # Datos para celulas malignas
+norm_malignos = tratar(malignos)
+
+benignosDF = df[df['diagnosis']=='B'] 
+benignos = benignosDF.loc[:,medidas].values # Datos para celulas benignas
+norm_benignos = tratar(benignos)
+
+malignosDFT = df[df['diagnosis']=='M']
+malignosT = malignosDFT.loc[:,todas_medidas].values
+norm_malignosT = tratar(malignosT)
+
+benignosDFT = df[df['diagnosis']=='B']
+benignosT = benignosDFT.loc[:,todas_medidas].values
+norm_benignosT = tratar(benignosT)
 
 m1 = tratar(m)
 m1T = tratar(mT)
@@ -95,12 +86,14 @@ b_proy_2 = np.dot(norm_benignos,pc2)
 m_proy_1 = np.dot(norm_malignos,pc1)
 m_proy_2 = np.dot(norm_malignos,pc2)
 
+plt.figure()
 plt.scatter(b_proy_1,b_proy_2, color="blue", label="benignos")
 plt.scatter(m_proy_1,m_proy_2, color="red", label = "malignos")
 plt.xlabel("Componente 1")
 plt.ylabel("Componente 2")
 plt.legend()
 plt.savefig("CorrealSergio_PCA.pdf")
+plt.close()
 
 # Ahora grafico teniendo en cuenta todos los parametros
 
@@ -113,11 +106,13 @@ b_proy_2T = np.dot(norm_benignosT,pc2T)
 m_proy_1T = np.dot(norm_malignosT,pc1T)
 m_proy_2T = np.dot(norm_malignosT,pc2T)
 
+plt.figure()
 plt.scatter(b_proy_1T,b_proy_2T, color="blue", label="benignos")
 plt.scatter(m_proy_1T,m_proy_2T, color="red", label = "malignos")
 plt.xlabel("Componente 1")
 plt.ylabel("Componente 2")
 plt.legend()
 plt.savefig("CorrealSergio_PCA_NoConcluyente.pdf")
+plt.close()
 
-print "Los parametros mas importantes son maximo 5. Las componentes de mayor magnitud del primer autovector indican que el radio, la textura y la compactez son los parametros mas importantes. Las componentes del segundo autovector indican que, en menor medida, el perimetro y la suavidad tambien son determinantes.\n\nLa figura CorrealSergio_PCA muestra la proyeccion de los datos solo teniendo en cuenta los promedios de los parametros (i.e. 10 variables). Esta figura muestra que con PCA es posible diferenciar celulas malignas y benignas porque se encuantran en regiones distintas de la grafica. No obstante, si se toman las 30 variables iniciales resulta la figura CorrealSergio_PCA_NoConcluyente que muestra que tener en cuanta todos estos datos no permite concluir sobre el estado de las celulas."
+print "Los parametros mas importantes son maximo 5. Las componentes de mayor magnitud del primer autovector indican que el radio, la textura y la compactez son los parametros mas importantes. Las componentes del segundo autovector indican que, en menor medida, el perimetro y la suavidad tambien son determinantes.\n\nLa figura CorrealSergio_PCA muestra la proyeccion de los datos solo teniendo en cuenta los promedios de los parametros (i.e. 10 variables). Esta figura muestra que con PCA no es posible diferenciar celulas malignas y benignas porque se encuantran en regiones equivalentes de la grafica. Incluso, si se toman las 30 variables iniciales resulta la figura CorrealSergio_PCA_NoConcluyente que muestra que tener en cuanta todos estos datos no permite tambpoco concluir sobre el estado de las celulas.\n"
